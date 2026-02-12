@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Walentynka 💖</title>
+
 <style>
 body{
   margin:0;
@@ -14,41 +15,39 @@ body{
   font-family:Arial,sans-serif;
   background:pink;
   overflow:hidden;
-  position: relative;
+  position:relative;
 }
 
-/* Kontener dla serduszek w tle */
-.heart-container{
-  position: absolute;
+/* TŁO – nieskończone serduszka */
+#bg{
+  position:absolute;
   inset:0;
   pointer-events:none;
   overflow:hidden;
 }
 
-.heart{
-  position: absolute;
-  font-size:20px;
+.bg-heart{
+  position:absolute;
+  animation:rise linear infinite;
   color:red;
-  animation-name:rise;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
 }
 
-@keyframes rise {
-  0% { transform: translateY(100vh) scale(1); opacity:1; }
-  100% { transform: translateY(-10vh) scale(1.2); opacity:0; }
+@keyframes rise{
+  from{transform:translateY(110vh);opacity:1;}
+  to{transform:translateY(-10vh);opacity:0;}
 }
 
+/* GŁÓWNE OKNO */
 .box{
-  position: relative;
-  background: rgba(255,255,255,0.85);
+  position:relative;
+  background:rgba(255,255,255,0.85);
   padding:30px 40px;
   border-radius:20px;
   text-align:center;
-  z-index: 10;
+  z-index:10;
 }
 
-h1{ color:red; }
+h1{color:red}
 
 .buttons{
   display:flex;
@@ -63,35 +62,54 @@ button{
   border:none;
   border-radius:999px;
   cursor:pointer;
-  transition: transform .2s ease;
-  position: relative;
+  transition:transform .2s ease;
 }
 
-#yes{ background:#ff4d6d; color:#fff; }
-#no{ background:#999; color:#fff; }
+#yes{background:#ff4d6d;color:#fff}
+#no{background:#999;color:#fff}
 
-.hidden{ display:none; }
+.hidden{display:none}
 
-/* Duże serce z napisem Crack me */
-.heart-box{
+/* OGROMNE SERCE */
+.big-heart{
   margin-top:30px;
-  font-size:150px;
-  position: relative;
-  cursor: pointer;
+  font-size:240px;
+  position:relative;
+  cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
+}
+
+/* NAPIS NA SERCU */
+.big-heart span{
+  position:absolute;
+  font-size:44px;
   color:red;
-  text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-}
-
-.heart-box span{
-  position: absolute;
-  font-size:40px;
-  color:white;
   font-weight:bold;
+  animation:textMove 1.2s infinite alternate;
 }
 
+/* ruch napisu */
+@keyframes textMove{
+  from{transform:translateY(-4px);}
+  to{transform:translateY(4px);}
+}
+
+/* trzęsienie serca */
+@keyframes shake{
+  0%{transform:translateX(0);}
+  25%{transform:translateX(-8px);}
+  50%{transform:translateX(8px);}
+  75%{transform:translateX(-8px);}
+  100%{transform:translateX(0);}
+}
+
+.shake{
+  animation:shake 0.3s;
+}
+
+/* WIADOMOŚĆ */
 .message{
   font-size:20px;
   color:#d00000;
@@ -99,40 +117,43 @@ button{
   white-space:pre-line;
 }
 
-/* konfetti */
+/* KONFETTI */
 .confetti{
-  position: fixed;
-  top: -10px;
-  font-size: 20px;
-  animation: fall 3s linear forwards;
-  pointer-events: none;
+  position:fixed;
+  top:-10px;
+  font-size:20px;
+  animation:fall 3s linear forwards;
+  pointer-events:none;
 }
 
 @keyframes fall{
-  to { transform: translateY(110vh) rotate(720deg); opacity:0; }
+  to{transform:translateY(110vh) rotate(720deg);opacity:0}
 }
 </style>
 </head>
+
 <body>
 
-<div class="heart-container" id="heartContainer"></div>
+<div id="bg"></div>
 
 <audio id="music" loop>
-<source src="https://cdn.pixabay.com/audio/2022/02/23/audio_6d7fdd6e6b.mp3" type="audio/mpeg">
+  <source src="https://cdn.pixabay.com/audio/2022/02/23/audio_6d7fdd6e6b.mp3">
 </audio>
 
 <div class="box">
   <h1>Gabi, czy chcesz być moją walentynką?</h1>
+
   <div class="buttons" id="buttons">
     <button id="yes">Tak</button>
     <button id="no">Nie</button>
   </div>
 
   <div id="heartBox" class="hidden">
-    <div class="heart-box" id="heart">
+    <div class="big-heart" id="heart">
       ❤️
-      <span>Crack me</span>
+      <span>Crack me 😈</span>
     </div>
+
     <div id="message" class="message hidden">
 Kocham cię ❤️
 - Twój Zakus
@@ -141,60 +162,63 @@ Kocham cię ❤️
 </div>
 
 <script>
-const yes = document.getElementById("yes");
-const no = document.getElementById("no");
-const buttons = document.getElementById("buttons");
-const heartBox = document.getElementById("heartBox");
-const message = document.getElementById("message");
-const music = document.getElementById("music");
-const heart = document.getElementById("heart");
-const heartContainer = document.getElementById("heartContainer");
+const yes=document.getElementById("yes");
+const no=document.getElementById("no");
+const buttons=document.getElementById("buttons");
+const heartBox=document.getElementById("heartBox");
+const heart=document.getElementById("heart");
+const message=document.getElementById("message");
+const music=document.getElementById("music");
+const bg=document.getElementById("bg");
 
-let counter = 0, scaleYes = 1, scaleNo = 1, heartClicks = 0;
+let noClicks=0, scaleYes=1, scaleNo=1, heartClicks=0;
 
-function playMusic(){ music.play().catch(()=>{}); }
-
-function createHeart(){
-  const h = document.createElement('div');
-  h.className = 'heart';
-  h.textContent = '❤️';
-  h.style.left = Math.random()*100+'vw';
-  h.style.fontSize = 10 + Math.random()*25 + 'px';
-  h.style.animationDuration = 3 + Math.random()*5+'s';
-  heartContainer.appendChild(h);
-  setTimeout(()=> h.remove(), 8000);
+function playMusic(){
+  music.play().catch(()=>{});
 }
 
-setInterval(createHeart, 300);
+/* generowanie tła */
+setInterval(()=>{
+  const h=document.createElement("div");
+  h.className="bg-heart";
+  h.textContent="❤️";
+  h.style.left=Math.random()*100+"vw";
+  h.style.fontSize=10+Math.random()*30+"px";
+  h.style.animationDuration=3+Math.random()*5+"s";
+  bg.appendChild(h);
+  setTimeout(()=>h.remove(),8000);
+},250);
 
-function confetti(count, emoji){
-  for(let i=0;i<count;i++){
-    const c = document.createElement("div");
-    c.className = "confetti";
-    c.textContent = emoji;
-    c.style.left = Math.random()*100 + "vw";
-    c.style.fontSize = 16 + Math.random()*20 + "px";
-    c.style.animationDuration = 2 + Math.random()*2 + "s";
+/* konfetti */
+function confetti(n,emoji){
+  for(let i=0;i<n;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.textContent=emoji;
+    c.style.left=Math.random()*100+"vw";
+    c.style.fontSize=16+Math.random()*20+"px";
     document.body.appendChild(c);
-    setTimeout(()=> c.remove(), 4000);
+    setTimeout(()=>c.remove(),4000);
   }
 }
 
+/* NIE */
 no.addEventListener("click",()=>{
   playMusic();
-  if(counter<50){
-    counter++;
+  if(noClicks<50){
+    noClicks++;
     scaleYes*=1.15;
     scaleNo*=0.85;
-    yes.style.transform = `scale(${scaleYes})`;
-    no.style.transform = `scale(${scaleNo})`;
+    yes.style.transform=`scale(${scaleYes})`;
+    no.style.transform=`scale(${scaleNo})`;
   }else{
     no.style.position="fixed";
-    no.style.left = Math.random()*(window.innerWidth-80)+'px';
-    no.style.top = Math.random()*(window.innerHeight-40)+'px';
+    no.style.left=Math.random()*(window.innerWidth-80)+"px";
+    no.style.top=Math.random()*(window.innerHeight-40)+"px";
   }
 });
 
+/* TAK */
 yes.addEventListener("click",()=>{
   playMusic();
   buttons.classList.add("hidden");
@@ -202,13 +226,19 @@ yes.addEventListener("click",()=>{
   confetti(40,"🎉");
 });
 
+/* SERCE */
 heart.addEventListener("click",()=>{
+  heart.classList.remove("shake");
+  void heart.offsetWidth;
+  heart.classList.add("shake");
+
   heartClicks++;
   if(heartClicks===5){
-    confetti(50,"❤️");
+    confetti(60,"❤️");
     message.classList.remove("hidden");
   }
 });
 </script>
+
 </body>
 </html>
